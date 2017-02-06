@@ -15,29 +15,52 @@ def number_of_triangles_real(m):
     m_3= np.dot(np.dot(m,m),m)
     return (np.trace(m_3)/6)
 
+# def number_of_triangles(node_hash, target_id):
+#     first_level_list = node_hash[target_id]
+#     triangle_count = {}
+#     for node_id in first_level_list:
+#         second_level_list = node_hash[node_id]
+#         triangle_count[node_id] = 1
+#         for mid_id in second_level_list:
+#             third_level_list = node_hash[mid_id]
+#             for term_id in third_level_list:
+#                 if (term_id == target_id):
+#                     triangle_count[node_id] += 1
+#     return triangle_count
 
 def number_of_triangles(node_hash, target_id):
     first_level_list = node_hash[target_id]
     triangle_count = {}
     for node_id in first_level_list:
         second_level_list = node_hash[node_id]
-        triangle_count[node_id] = 0
-        for term_id in second_level_list:
-            if (term_id == target_id):
-                triangle_count[node_id] += 1
+        # triangle_count[node_id] = 1
+        triangle_count[node_id] = len(list(set(first_level_list).intersection(second_level_list))) +1
     return triangle_count
 
-def random_walk_triagnels(node_hash, m, n = 60):
+def count_tu(u, node_hash):
+    u_list = node_hash[u]
+    u_list_tmp = node_hash[u]
+    tu = 0
+    for v in u_list:
+        u_list_tmp.pop(0)
+        for n in u_list_tmp:
+            if (is_a_triangle(v,n,node_hash)):
+                tu += 1
+    return tu
+def is_a_triangle(v ,n, node_hash):
+    return (v in node_hash[n])
+
+
+def random_walk_triagnels(node_hash, m, n = 30):
     PRESET_INITIAL = 0
     # pick a starting point
     if (PRESET_INITIAL == 0):
-        u = random.randint(1,n+1)
+        u = random.randint(1,n)
         u_tri_status = number_of_triangles(node_hash, u)
-        # print(u)
-        # print(u_tri_status)
-        # print(node_hash)
-        # sys.exit()
-        t_u = sum(u_tri_status.values())
+        w_u = sum(u_tri_status.values())
+        # t_u = count_tu(u, node_hash)
+        # t_u = sum(u_tri_status.values())
+        set_nodes = []
         du = len(u_tri_status.values())
     K = 10000
     Zk = []
@@ -49,12 +72,23 @@ def random_walk_triagnels(node_hash, m, n = 60):
         flag = 1
         while (flag == 1):
             v = pick_based_on_triangles(v_tri_status, v)
+            # print(70*'-')
+            # print("node hash")
+            # print(node_hash)
+            # print(70*'-')
+            # print('targeting node:{}'.format(v))
+            # print(70*'-')
             v_tri_status = number_of_triangles(node_hash, v)
+            # print(v_tri_status)
+            # sys.exit()
             step += 1
             if (u == v):
                 flag = 0
         Zk.append(step)
-    estimate_tri = sum(Zk) * (du + 2*t_u) / float(6*len(Zk)) - m/float(3)
+    print("sum:{}".format(sum(Zk)/ float(6*len(Zk))))
+    # print("du:{}, t_u is {}".format(du,t_u))
+    # estimate_tri = sum(Zk) * (du + 2*t_u) / float(6*len(Zk)) - m/float(3)
+    estimate_tri = sum(Zk) * (w_u) / float(6*len(Zk)) - m/float(3)
     return estimate_tri
 
 
@@ -62,7 +96,7 @@ def pick_based_on_triangles(triangle_dict, v_id):
     triangle_list = triangle_dict.values()
     random_val = random.random()
     rsum = 0
-    res = 1
+    res = 0
     total_degree = 0
     prob_list = []
     total = sum(triangle_list)
@@ -70,40 +104,49 @@ def pick_based_on_triangles(triangle_dict, v_id):
     for prob in prob_list:
         rsum += prob
         if (random_val < rsum):
-            return triangle_dict.keys()[res-1]
+            return triangle_dict.keys()[res]
         res += 1
-
 
 def random_walk_edges(m, node_hash, n = 60):
     u = random.randint(1,n)
     u_connection = node_hash[u]
     du = len(u_connection)
 
+    p = random.randint(1,n)
+    while (u == p):
+        p = random.randint(1,n)
+
     K = 10000 # number of traversals
     Zk = []
+    fx = []
     for i in range(0,K):
         v = u
         dv = du
         v_connection = u_connection
         step = 0
         flag = 1
+        fx_count = 0
         while (flag == 1):
             v = v_connection[random.randint(0,dv-1)]
             v_connection = node_hash[v]
             dv = len(v_connection)
             step += 1
+            if (p == v):
+                fx_count += 1
             if (u == v):
                 flag = 0
         Zk.append(step)
+        fx.append(fx_count)
     # m = Z(k)d(u) / 2k
-    estimated_m = sum(Zk) * du / (2*len(Zk))
+    # estimated_m_regenerative = sum(fx)/(len(fx)) * du
+    estimated_m = sum(Zk) * du / float(2*len(Zk))
     return estimated_m
 
 def pick_for_counting_nodes(node_hash, v_id):
     v_connected = node_hash[v_id]
     dv = len(v_connected)
     # edge weight is now 1/u + 1/v
-    edge_weights = [(1/dv + 1/float(len(node_hash[node_id]))) for node_id in v_connected]
+    edge_weights = [(1/float(dv) + 1/float(len(node_hash[node_id]))) for node_id in v_connected]
     prob_list = []
     total = sum(edge_weights)
     prob_list = [x / float(total) for x in edge_weights]
@@ -122,10 +165,10 @@ def random_walk_nodes(node_hash,n = 60):
     u = random.randint(1,n)
     u_connection = node_hash[u]
     du = len(u_connection)
-    u_edge_weights = [(1/float(len(node_hash[node_id]))) for node_id in u_connection]
-    wu = sum(u_edge_weights) + 1
+    u_edge_weights = [(1/float(du) + 1/float(len(node_hash[node_id]))) for node_id in u_connection]
+    wu = sum(u_edge_weights)
 
-    K = 30000
+    K = 1000
     Zk = []
     for i in range (0,K):
         v = u
@@ -141,3 +184,44 @@ def random_walk_nodes(node_hash,n = 60):
     # m = Z(k)d(u) / 2k
     estimated_nodes = sum(Zk)*wu / (2*K)
     return estimated_nodes
+
+# def random_walk_nodes_cycle(node_hash, n = 60):
+#     u = random.randint(1,n)
+#     u_connection = node_hash[u]
+#     du = len(u_connection)
+#
+#     p = random.randint(1,n)
+#     while (u == p):
+#         p = random.randint(1,n)
+#
+#     K = 10000 # number of traversals
+#     fx = []
+#     fx_count = 0
+#     for i in range(0,K):
+#         v = u
+#         dv = du
+#         v_connection = u_connection
+#         step = 0
+#         flag = 1
+#         fx_count = 0
+#         while (flag == 1):
+#             v = v_connection[random.randint(0,dv-1)]
+#             v_connection = node_hash[v]
+#             dv = len(v_connection)
+#             fx_count += 1/float(dv)
+#             if (u == v):
+#                 flag = 0
+#         fx.append(fx_count)
+#     # m = Z(k)d(u) / 2k
+#     # print(fx)
+#     # print(du)
+#     estimated_m_regenerative = sum(fx)/(len(fx)) * du
+#     return estimated_m_regenerative
+#
+# def random_walk_cfrp_edges(node_hash, n = 60):
+#     u = random.randint(1,n)
+#     v = random.randint(1,n)
+#     while (u == v):
+#         v = random.randint(1,n)
+#     u_connection = node_hash[u]
+#     du = len(u_connection)
