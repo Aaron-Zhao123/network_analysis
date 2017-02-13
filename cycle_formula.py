@@ -1,4 +1,4 @@
-from snap import *
+# from snap import *
 import random
 import numpy as np
 import sys
