@@ -1,28 +1,28 @@
-from snap import *
+# from snap import *
 import random
 import numpy as np
 import sys
 np.set_printoptions(threshold=np.nan)
 
 
-
-def preferential_attach_with_Graph(G):
-    total_degree = 0
-    prob_list = []
-    random_val = random.random() #returns [0,1]
-    rsum = 0
-    res = 1
-    for node in G.Nodes():
-        info = (node, node.GetOutDeg())
-        total_degree += node.GetOutDeg()
-        prob_list.append(node.GetOutDeg())
-    prob_list = [x / float(total_degree) for x in prob_list]
-    for prob in prob_list:
-        rsum += prob
-        if (random_val < rsum):
-            return res
-        res += 1
-
+#
+# def preferential_attach_with_Graph(G):
+#     total_degree = 0
+#     prob_list = []
+#     random_val = random.random() #returns [0,1]
+#     rsum = 0
+#     res = 1
+#     for node in G.Nodes():
+#         info = (node, node.GetOutDeg())
+#         total_degree += node.GetOutDeg()
+#         prob_list.append(node.GetOutDeg())
+#     prob_list = [x / float(total_degree) for x in prob_list]
+#     for prob in prob_list:
+#         rsum += prob
+#         if (random_val < rsum):
+#             return res
+#         res += 1
+#
 def random_pick(node_hash, node_id):
     node_list = node_hash[node_id]
     return random.choice(node_list)
@@ -103,10 +103,10 @@ def hybrid_triangle_with_Graph(G, node_hash, n =60):
                 # with prob 1-p, connect randomly to a neighbour of x
                 pick_x_id = random_pick(node_hash, x_id)
             attach_list.append(pick_x_id)
-        G.AddNode(v_id)
+        # G.AddNode(v_id)
         node_hash[v_id] = []
         for node_id in attach_list:
-            G.AddEdge(v_id, node_id)
+            # G.AddEdge(v_id, node_id)
             node_hash[v_id].append(node_id)
             node_hash[node_id].append(v_id)
             # flush as a set, avoids duplicates
