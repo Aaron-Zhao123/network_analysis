@@ -6,7 +6,7 @@ from cycle_formula import *
 import pickle
 
 def main():
-    n = 100
+    n = 100000
     CREATE_GRAPH = 0
     EDGES = 1
     TRIANGLE = 1
