@@ -85,9 +85,13 @@ def random_walk_triagnels(node_hash, m, n = 30):
             if (u == v):
                 flag = 0
         Zk.append(step)
-    print("sum:{}".format(sum(Zk)/ float(6*len(Zk))))
+    # print("sum:{}".format(sum(Zk)/ float(6*len(Zk))))
     # print("du:{}, t_u is {}".format(du,t_u))
     # estimate_tri = sum(Zk) * (du + 2*t_u) / float(6*len(Zk)) - m/float(3)
+    est_tri_list = []
+    for i in range(0, len(Zk)):
+        est_tri_list.append(sum(Zk[:i+1]) * du / float(2*len(Zk[:i+1])))
+    write_to_txt(est_tri_list, 'random_walk_tri.txt')
     estimate_tri = sum(Zk) * (w_u) / float(6*len(Zk)) - m/float(3)
     return estimate_tri
 
@@ -140,7 +144,16 @@ def random_walk_edges(m, node_hash, n = 60):
     # m = Z(k)d(u) / 2k
     # estimated_m_regenerative = sum(fx)/(len(fx)) * du
     estimated_m = sum(Zk) * du / float(2*len(Zk))
+    est_m_list = []
+    for i in range(0, len(Zk)):
+        est_m_list.append(sum(Zk[:i+1]) * du / float(2*len(Zk[:i+1])))
+    write_to_txt(est_m_list, 'random_walk_edges.txt')
     return estimated_m
+
+def write_to_txt(m, file_name):
+    with open(file_name, 'w') as f:
+        for item in m:
+            f.write("%s\n"%item)
 
 def pick_for_counting_nodes(node_hash, v_id):
     v_connected = node_hash[v_id]
@@ -168,7 +181,7 @@ def random_walk_nodes(node_hash,n = 60):
     u_edge_weights = [(1/float(du) + 1/float(len(node_hash[node_id]))) for node_id in u_connection]
     wu = sum(u_edge_weights)
 
-    K = 1000
+    K = 10000
     Zk = []
     for i in range (0,K):
         v = u
@@ -182,6 +195,10 @@ def random_walk_nodes(node_hash,n = 60):
                 flag = 0
         Zk.append(step)
     # m = Z(k)d(u) / 2k
+    est_n_list = []
+    for i in range(0, len(Zk)):
+        est_n_list.append(sum(Zk[:i+1]) * wu / float(2*len(Zk[:i+1])))
+    write_to_txt(est_n_list, 'random_walk_nodes.txt')
     estimated_nodes = sum(Zk)*wu / (2*K)
     return estimated_nodes
 

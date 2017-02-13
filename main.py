@@ -3,13 +3,16 @@ from hybrid_triangle_closing_model import *
 # hybrid_triangle_with_Graph returns a proper graph
 from random_walk import *
 from cycle_formula import *
+import pickle
 
 def main():
-    n = 50
+    n = 100
     CREATE_GRAPH = 0
     EDGES = 1
     TRIANGLE = 1
-    NODES = 0
+    NODES = 1
+    SAVE_MODEL = 1
+    LOAD_MODEL = 0
 
     node_hash = {
         1: [2,3],
@@ -28,7 +31,13 @@ def main():
         G = hybrid_triangle_with_Graph(G, node_hash, n)
         m = adjacent_matrix(node_hash, n)
     else:
-        m = hybrid_triangle(node_hash, n)
+        if (SAVE_MODEL == 1):
+            m = hybrid_triangle(node_hash, n)
+            with open("hybrid_triangle_model.pkl","wb") as f:
+                pickle.dump(m, f)
+        if (LOAD_MODEL == 1):
+            with open("hybrid_triangle_model.pkl", "rb") as f:
+                m = pickle.load(f)
         # print(m)
     if (EDGES):
         edges = analyze_adjacent_matrix(m)
@@ -39,10 +48,10 @@ def main():
             DrawGViz(G, gvlDot, "network.png"," ", True)
     if (TRIANGLE):
         # print(m)
-        tri_est = random_walk_triagnels(node_hash,edges, n)
         tri =  number_of_triangles_real(m)
-        # tri_cycle = random_walk_triagnels_cycle(node_hash, n)
+        tri_est = random_walk_triagnels(node_hash,edges, n)
         print("Number of estimated triangles is {}".format(tri_est))
+        # tri_cycle = random_walk_triagnels_cycle(node_hash, n)
         # print("Number of estimated triangles from cycle is {}".format(tri_cycle))
         print("Number of triangles is {}".format(tri))
     if (NODES):
